@@ -90,11 +90,7 @@ const projects: Project[] = [
     span: "col-span-12 md:col-span-4",
     height: "h-64 md:h-72",
     href: "https://github.com/Madness807/ft_transcendence",
-    bgStyle: {
-      background: "linear-gradient(160deg, #060606 0%, #0e0e0e 100%)",
-      backgroundImage:
-        "repeating-linear-gradient(0deg, transparent 0px, transparent 39px, rgba(255,255,255,0.025) 39px, rgba(255,255,255,0.025) 40px), repeating-linear-gradient(90deg, transparent 0px, transparent 39px, rgba(255,255,255,0.025) 39px, rgba(255,255,255,0.025) 40px)",
-    },
+    image: "/projects/transcendence.png",
   },
   {
     id: "06",
