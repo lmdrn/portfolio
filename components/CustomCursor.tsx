@@ -1,16 +1,27 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react"; // useState kept for hovering
+import { useEffect, useRef, useState, useSyncExternalStore } from "react"; // useState kept for hovering
 import { motion, useMotionValue, useSpring } from "framer-motion";
+
+const FINE_POINTER = "(pointer: fine)";
+
+// Lit la media query côté client sans setState dans un effet ; false au rendu serveur
+const subscribeFinePointer = (onChange: () => void) => {
+  const mql = window.matchMedia(FINE_POINTER);
+  mql.addEventListener("change", onChange);
+  return () => mql.removeEventListener("change", onChange);
+};
+const getFinePointer = () => window.matchMedia(FINE_POINTER).matches;
+const getServerFinePointer = () => false;
 
 export default function CustomCursor() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [hovering, setHovering] = useState(false);
-  const [isFinePointer, setIsFinePointer] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    setIsFinePointer(window.matchMedia("(pointer: fine)").matches);
-  }, []);
+  const isFinePointer = useSyncExternalStore(
+    subscribeFinePointer,
+    getFinePointer,
+    getServerFinePointer
+  );
   const lastPos = useRef<{ x: number; y: number } | null>(null);
   const rafRef = useRef<number>(0);
 

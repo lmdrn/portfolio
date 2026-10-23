@@ -1,6 +1,30 @@
 import type { NextConfig } from "next";
 
+const isDev = process.env.NODE_ENV === "development";
+
+// Content-Security-Policy — n'autorise que les ressources servies par le site lui-même
+// 'unsafe-inline' est nécessaire : Next.js injecte des scripts inline (pages statiques, pas de nonce)
+// et framer-motion anime via des styles inline. En dev, 'unsafe-eval' + websocket pour le hot reload.
+const contentSecurityPolicy = [
+  "default-src 'self'",
+  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob:",
+  "font-src 'self'",
+  `connect-src 'self'${isDev ? " ws: wss:" : ""}`,
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-ancestors 'self'",
+  ...(isDev ? [] : ["upgrade-insecure-requests"]),
+].join("; ");
+
 const securityHeaders = [
+  // Limite les sources de scripts, styles, images… — principale protection contre le XSS
+  {
+    key: "Content-Security-Policy",
+    value: contentSecurityPolicy,
+  },
   // Force HTTPS — le navigateur ne tentera jamais une connexion HTTP
   {
     key: "Strict-Transport-Security",
@@ -26,15 +50,9 @@ const securityHeaders = [
     key: "Permissions-Policy",
     value: "camera=(), microphone=(), geolocation=(), interest-cohort=()",
   },
-  // Active le filtre XSS intégré des vieux navigateurs
-  {
-    key: "X-XSS-Protection",
-    value: "1; mode=block",
-  },
 ];
 
 const nextConfig: NextConfig = {
-  allowedDevOrigins: ["192.168.120.176"],
   async headers() {
     return [
       {
