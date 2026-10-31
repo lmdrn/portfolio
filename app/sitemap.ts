@@ -1,32 +1,25 @@
 import type { MetadataRoute } from "next";
+import { SITE_URL, locales } from "@/lib/i18n";
+import { projects } from "@/data/projects";
 
 // Génère automatiquement /sitemap.xml
-// Google lit ce fichier pour découvrir et indexer toutes tes pages
+// Chaque page existe en anglais et en français : Google reçoit les deux versions liées entre elles
 export default function sitemap(): MetadataRoute.Sitemap {
-  return [
-    {
-      url: "https://leamedrano.com",
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 1, // Page la plus importante
-    },
-    {
-      url: "https://leamedrano.com/cv",
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.8,
-    },
-    {
-      url: "https://leamedrano.com/illustrations",
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.7,
-    },
-    {
-      url: "https://leamedrano.com/illustrations/digital",
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.7,
-    },
+  const pages = [
+    { path: "", priority: 1 },
+    { path: "/cv", priority: 0.8 },
+    ...projects.map((p) => ({ path: `/work/${p.slug}`, priority: 0.7 })),
   ];
+
+  return pages.flatMap(({ path, priority }) =>
+    locales.map((lang) => ({
+      url: `${SITE_URL}/${lang}${path}`,
+      lastModified: new Date(),
+      changeFrequency: "monthly" as const,
+      priority,
+      alternates: {
+        languages: Object.fromEntries(locales.map((l) => [l, `${SITE_URL}/${l}${path}`])),
+      },
+    })),
+  );
 }

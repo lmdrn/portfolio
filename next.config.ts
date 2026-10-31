@@ -2,16 +2,19 @@ import type { NextConfig } from "next";
 
 const isDev = process.env.NODE_ENV === "development";
 
-// Content-Security-Policy — n'autorise que les ressources servies par le site lui-même
+// Google Analytics (chargé seulement après accord du visiteur)
+const ga = "https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com";
+
+// Content-Security-Policy — n'autorise que les ressources servies par le site lui-même, plus Google Analytics
 // 'unsafe-inline' est nécessaire : Next.js injecte des scripts inline (pages statiques, pas de nonce)
-// et framer-motion anime via des styles inline. En dev, 'unsafe-eval' + websocket pour le hot reload.
+// et GSAP anime via des styles inline. En dev, 'unsafe-eval' + websocket pour le hot reload.
 const contentSecurityPolicy = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
+  `script-src 'self' 'unsafe-inline' https://www.googletagmanager.com${isDev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob:",
+  `img-src 'self' data: blob: ${ga}`,
   "font-src 'self'",
-  `connect-src 'self'${isDev ? " ws: wss:" : ""}`,
+  `connect-src 'self' ${ga}${isDev ? " ws: wss:" : ""}`,
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",
@@ -53,6 +56,8 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // Les captures PNG font jusqu'à 4 Mo : Next les sert en AVIF/WebP à la bonne taille
+  images: { formats: ["image/avif", "image/webp"] },
   async headers() {
     return [
       {
